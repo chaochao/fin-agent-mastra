@@ -36,7 +36,7 @@ run.mjs                        # smoke test (npm run start)
 
 ## Progress
 - [x] **Day 1** — scaffold + DeepSeek agent + first `createTool()` tool + smoke test.
-- [ ] **Day 2** — seed realistic financial data (transactions, invoices) into SQLite.
+- [x] **Day 2** — seed realistic financial data into SQLite. `npm run seed` → `data/finance.db` (better-sqlite3, deterministic SEED=42, anchor 2026-06-30). Tables: accounts/customers/invoices/transactions (signed `amount` + `transaction_type`). `npm test` runs the `node --test` suites. Note: Node 22.17 needs `--experimental-strip-types` (baked into scripts).
 - [ ] **Day 3** — `queryTransactions` tool (schema-constrained SQL, no raw SQL from the LLM).
 - [ ] **Day 4** — vectorize documents with BGE-M3 (chunk → embed → upsert).
 - [ ] **Day 5** — `searchDocuments` RAG tool + wire into agent.
