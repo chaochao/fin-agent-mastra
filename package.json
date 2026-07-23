@@ -1,0 +1,20 @@
+{
+  "name": "fin-agent-mastra",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "SMB Finance Copilot — Mastra practice project (DeepSeek agent + BGE-M3 RAG)",
+  "scripts": {
+    "dev": "mastra dev",
+    "start": "node run.mjs"
+  },
+  "dependencies": {
+    "@mastra/core": "latest",
+    "@mastra/rag": "latest",
+    "zod": "latest"
+  },
+  "devDependencies": {
+    "mastra": "latest",
+    "typescript": "latest",
+    "@types/node": "latest"
+  }
+}
