@@ -37,7 +37,7 @@ run.mjs                        # smoke test (npm run start)
 ## Progress
 - [x] **Day 1** — scaffold + DeepSeek agent + first `createTool()` tool + smoke test.
 - [x] **Day 2** — seed realistic financial data into SQLite. `npm run seed` → `data/finance.db` (better-sqlite3, deterministic SEED=42, anchor 2026-06-30). Tables: accounts/customers/invoices/transactions (signed `amount` + `transaction_type`). `npm test` runs the `node --test` suites. Note: Node 22.17 needs `--experimental-strip-types` (baked into scripts).
-- [ ] **Day 3** — `queryTransactions` tool (schema-constrained SQL, no raw SQL from the LLM).
+- [x] **Day 3** — `run_sql` tool: **guarded text-to-SQL** (LLM writes the SQL; rails in `src/db/safe-sql.ts` enforce read-only + single-SELECT + auto-LIMIT; errors feed a retry loop capped by `maxSteps`). Schema inlined in the agent system prompt. Agent on `deepseek/deepseek-v4-pro`. `npm test` (25 deterministic) + `npm run eval:day3` (9/9 live). See `docs/design-notes.md` for rationale + backlog. (Chose this over the plan's narrower schema-constrained tool.)
 - [ ] **Day 4** — vectorize documents with BGE-M3 (chunk → embed → upsert).
 - [ ] **Day 5** — `searchDocuments` RAG tool + wire into agent.
 - [ ] **Day 6** — memory. **Day 7** — guardrails/validation. **Day 8** — evals.

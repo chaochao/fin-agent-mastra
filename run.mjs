@@ -3,5 +3,8 @@
 import { mastra } from './src/mastra/index.ts';
 
 const agent = mastra.getAgentById('finance-agent');
-const res = await agent.generate('Say hello, then use the echo tool to echo "it works".');
+const res = await agent.generate(
+  'What did we spend on software subscriptions in Q2 2026?',
+  { maxSteps: 8 },
+);
 console.log(res.text);

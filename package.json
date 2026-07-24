@@ -5,9 +5,10 @@
   "description": "SMB Finance Copilot — Mastra practice project (DeepSeek agent + BGE-M3 RAG)",
   "scripts": {
     "dev": "mastra dev",
-    "start": "node run.mjs",
+    "start": "node --experimental-strip-types --env-file=.env run.mjs",
     "seed": "node --experimental-strip-types src/db/seed.ts",
-    "test": "node --experimental-strip-types --test src/db/*.test.ts"
+    "test": "node --experimental-strip-types --test src/db/*.test.ts",
+    "eval:day3": "node --experimental-strip-types --env-file=.env src/evals/day3.ts"
   },
   "dependencies": {
     "@mastra/core": "latest",
