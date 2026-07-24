@@ -33,9 +33,9 @@ export const financeAgent = new Agent({
       H1 2026 = 2026-01-01..2026-06-30; last year = 2025.
     - transactions.amount is SIGNED: negative = money out (expense), positive = money in
       (income). "revenue/income" = SUM(amount) with amount > 0 (or transaction_type='payment').
-    - SPEND / EXPENSE TOTALS: always compute GROSS money-out — filter `amount < 0` and report
-      `-SUM(amount)`. This counts charges, payouts, and fees. Do NOT net out refunds: refunds
-      are positive rows on an expense category, and the `amount < 0` filter already excludes
+    - SPEND / EXPENSE TOTALS: always compute GROSS money-out — filter 'amount < 0' and report
+      -SUM(amount). This counts charges, payouts, and fees. Do NOT net out refunds: refunds
+      are positive rows on an expense category, and the 'amount < 0' filter already excludes
       them. Only subtract refunds if the user explicitly asks for spend "net of refunds".
     - transaction_type is one of: charge, payout, fee (money out); payment (customer revenue,
       linked to an invoice); refund (money BACK on an expense category, so positive);
