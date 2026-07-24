@@ -1,13 +1,26 @@
 import Database from 'better-sqlite3';
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { existsSync, readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-// Resolve paths from the project root (process.cwd()), NOT import.meta.url. Mastra
-// bundles tools into .mastra/output/, so an import.meta.url-relative path would point
-// at the bundle and miss the real data/ dir and schema.sql. npm scripts run from the
-// project root, so cwd is stable for `npm run dev|seed|test`.
-export const DB_PATH = join(process.cwd(), 'data', 'finance.db');
-const SCHEMA_PATH = join(process.cwd(), 'src', 'db', 'schema.sql');
+// Find the real project root. Neither import.meta.url nor process.cwd() is reliable:
+// `mastra dev` bundles this module into .mastra/output/ AND runs with cwd there, so
+// both point inside the bundle. Walk up until we find src/db/schema.sql — a marker that
+// exists only at the repo root, never in the bundle. Works for `npm run dev|seed|test`.
+function findProjectRoot(): string {
+  let dir = dirname(fileURLToPath(import.meta.url));
+  for (let i = 0; i < 8; i++) {
+    if (existsSync(join(dir, 'src', 'db', 'schema.sql'))) return dir;
+    const parent = dirname(dir);
+    if (parent === dir) break;
+    dir = parent;
+  }
+  return process.cwd(); // fallback
+}
+
+const ROOT = findProjectRoot();
+export const DB_PATH = join(ROOT, 'data', 'finance.db');
+const SCHEMA_PATH = join(ROOT, 'src', 'db', 'schema.sql');
 
 // Opens a DB and applies the schema. Pass a fresh/empty path (':memory:' in tests,
 // a rebuilt file in seed.ts). Not for reopening an already-seeded file.
