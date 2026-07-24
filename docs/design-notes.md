@@ -52,10 +52,16 @@ Ranked-ish. Pull one into a day when it fits.
 - [ ] **Auto-generate the schema block from the DB** (`sqlite_master` / `PRAGMA`) instead
   of hand-writing it in the prompt. Prevents prompt/DB drift after any `ALTER TABLE`.
   Small, high-value.
-- [ ] **Investigate the Q5 discrepancy.** Live eval: agent reported 2025 operating
-  expenses **$1,270,891.13** vs. our reference SQL **$1,271,067.13** (~$176 diff, still
-  within tolerance). Likely a definitional difference in how refunds net against
-  expenses. Decide the canonical definition and make prompt + reference SQL agree.
+- [x] **"Spend" definition pinned to GROSS (2026-07-24).** In Studio the agent gave
+  $4,396 vs the eval's $5,136 for Q2 software spend — because it sometimes dropped the
+  `amount < 0` filter, letting positive **refund** rows net against charges. Root cause:
+  "spend" was undefined (gross vs net of refunds). Decision: **gross money-out** — always
+  filter `amount < 0`, report `-SUM(amount)`, never net out refunds unless asked. Pinned
+  in the agent system prompt as an emphatic rule. Result: 5/5 runs now return $5,136.
+  Note: prompt rules reduce but don't *guarantee* determinism — a hard guarantee needs a
+  pinned query or an eval gate. The related 2025 operating-expenses ~$176 diff is the same
+  family (refund netting) and should now track the gross definition too — re-check on next
+  eval run.
 - [ ] **Scale schema to the prompt — only matters for large DBs.** Our inline approach
   doesn't scale past dozens of tables (token cost, context limit, and — the real limit —
   accuracy degrades as relevant tables get lost in noise). Options when needed:
