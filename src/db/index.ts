@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 // `mastra dev` bundles this module into .mastra/output/ AND runs with cwd there, so
 // both point inside the bundle. Walk up until we find src/db/schema.sql — a marker that
 // exists only at the repo root, never in the bundle. Works for `npm run dev|seed|test`.
-function findProjectRoot(): string {
+export function findProjectRoot(): string {
   let dir = dirname(fileURLToPath(import.meta.url));
   for (let i = 0; i < 8; i++) {
     if (existsSync(join(dir, 'src', 'db', 'schema.sql'))) return dir;

@@ -38,7 +38,7 @@ run.mjs                        # smoke test (npm run start)
 - [x] **Day 1** — scaffold + DeepSeek agent + first `createTool()` tool + smoke test.
 - [x] **Day 2** — seed realistic financial data into SQLite. `npm run seed` → `data/finance.db` (better-sqlite3, deterministic SEED=42, anchor 2026-06-30). Tables: accounts/customers/invoices/transactions (signed `amount` + `transaction_type`). `npm test` runs the `node --test` suites. Note: Node 22.17 needs `--experimental-strip-types` (baked into scripts).
 - [x] **Day 3** — `run_sql` tool: **guarded text-to-SQL** (LLM writes the SQL; rails in `src/db/safe-sql.ts` enforce read-only + single-SELECT + auto-LIMIT; errors feed a retry loop capped by `maxSteps`). Schema inlined in the agent system prompt. Agent on `deepseek/deepseek-v4-pro`. `npm test` (25 deterministic) + `npm run eval:day3` (9/9 live). See `docs/design-notes.md` for rationale + backlog. (Chose this over the plan's narrower schema-constrained tool.)
-- [ ] **Day 4** — vectorize documents with BGE-M3 (chunk → embed → upsert).
+- [x] **Day 4** — RAG ingest pipeline. `npm run ingest` → `data/vectors.db` (LibSQL vector store, `finance_docs` index, 1024-dim). Loads `data/docs/*.md` → chunk (`MDocument`, recursive, maxSize 512/overlap 50) → embed (BGE-M3 via local Ollama, `src/rag/embed.ts`) → upsert with chunk text in metadata. Retrieval verified (right doc + section per question). Pinned `@mastra/libsql@1.16.0` for core 1.51 compat. See `docs/design-notes.md`.
 - [ ] **Day 5** — `searchDocuments` RAG tool + wire into agent.
 - [ ] **Day 6** — memory. **Day 7** — guardrails/validation. **Day 8** — evals.
 - [ ] **Day 9** — a Workflow (multi-step orchestration). **Day 10** — harden (Postgres/pgvector) + write-up.

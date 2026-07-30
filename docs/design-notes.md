@@ -45,6 +45,37 @@ Safety comes from rails, not from restricting the query shape.
 
 ---
 
+## Day 4 — RAG ingest pipeline (chunk → embed → store)
+
+### What we built
+`npm run ingest` turns `data/docs/*.md` into a queryable vector index:
+- `src/rag/embed.ts` — embeddings via **BGE-M3 on local Ollama** (`/api/embeddings`),
+  1024 dims. DeepSeek has no embeddings API, so this is the "embedder" half of the split.
+- `src/rag/vector-store.ts` — **LibSQL** vector store at `data/vectors.db`, index
+  `finance_docs`, cosine, 1024-dim. Path resolved via shared `findProjectRoot()`.
+- `src/rag/ingest.ts` — load → `MDocument.chunk({ strategy:'recursive', maxSize:512,
+  overlap:50 })` → embed → `upsert` with the chunk **text stored in metadata** (so
+  retrieval returns real text, not just a vector). Rebuilds the index each run.
+- Sample corpus: `data/docs/contoso-media-msa.md` (net-30 contract) + `travel-and-expense-policy.md`.
+
+### Verification
+Retrieval routes each question to the right doc AND section: "payment terms for Contoso"
+→ MSA; "expense alcohol" → policy §4 Meals; "pay invoice late" → MSA §2 Late payments.
+
+### Decisions made
+- **Embedding call = direct Ollama fetch**, not Mastra's `embedMany`/model-router. Simpler,
+  transparent, one fewer API to track, and already proven in the demo.
+- **`@mastra/libsql` pinned to 1.16.0.** `latest` (1.18) imports `FactoryStorage` from
+  `@mastra/core/storage`, which our core 1.51 doesn't export → `Class extends undefined`.
+  1.16.0 is the newest that imports cleanly with core 1.51. (Upgrading the whole Mastra
+  stack to latest is deferred — it risks the working Day 1–3 agent; revisit on Day 10.)
+- **Two separate stores:** `finance.db` (structured) vs `data/vectors.db` (documents).
+  Re-seeding one never touches the other; re-embed only when the *documents* change.
+- **Doc drift caught:** the plan's `chunk({ size })` is now `maxSize`, and `LibSQLVector`
+  takes `{ id, url }` (not `connectionUrl`). Verified via a live probe before writing.
+
+---
+
 ## Backlog / future improvements
 
 Ranked-ish. Pull one into a day when it fits.
