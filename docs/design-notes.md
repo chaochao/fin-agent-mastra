@@ -45,6 +45,33 @@ Safety comes from rails, not from restricting the query shape.
 
 ---
 
+## Day 5 — `search_documents` RAG tool (wire RAG into the agent)
+
+### What we built
+- `src/mastra/tools/search-documents.ts` — `createTool` that embeds the question,
+  runs `store.query({ topK:4 })`, filters by a **loose 0.3 score floor**, and returns
+  `{ found, results:[{ text, source }] }`. Reuses Day 4's `embed()` + `openVectorStore()`.
+- `finance-agent.ts` — added the tool + rewrote the prompt to **route** (numbers→run_sql,
+  documents→search_documents, some questions need both), **ground** answers only in
+  returned text, **cite** the source file, and **decline** when nothing matches.
+- `src/evals/day5.ts` (`npm run eval:day5`) — live checks: routing, citation, grounding,
+  and an out-of-scope question that must be declined. 5/5 on pro.
+
+### Decisions made
+- **No scores exposed to the LLM.** Cosine scores live in a compressed, model-specific
+  band and LLMs can't calibrate them → the model judges relevance from the returned TEXT.
+  Scores used internally only, for the loose floor.
+- **Loose floor (0.3), not a tight threshold.** A hard cutoff is fragile (compressed band);
+  0.3 only catches "nothing even vaguely related", and the grounding prompt does the rest.
+- **`{ found }` flag + strict grounding prompt** = the real anti-hallucination lever
+  (verified: agent declines "AWS payment terms" instead of inventing).
+- **Model kept on `deepseek-v4-pro`.** A/B via the eval: flash ALSO scored 5/5 and is
+  faster/cheaper, but our cases are easy; pro chosen for the harder cross-plane reasoning
+  on Day 6/9. Re-check with evals — let the eval pick the model. (Note: `deepseek-v4-flash-0731`
+  is NOT a valid API model name — only `deepseek-v4-pro` / `deepseek-v4-flash`.)
+
+---
+
 ## Day 4 — RAG ingest pipeline (chunk → embed → store)
 
 ### What we built

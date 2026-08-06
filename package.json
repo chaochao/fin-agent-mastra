@@ -10,7 +10,8 @@
     "test": "node --experimental-strip-types --test src/db/*.test.ts",
     "eval:day3": "node --experimental-strip-types --env-file=.env src/evals/day3.ts",
     "ingest": "node --experimental-strip-types src/rag/ingest.ts",
-    "search": "node --experimental-strip-types src/rag/search.ts"
+    "search": "node --experimental-strip-types src/rag/search.ts",
+    "eval:day5": "node --experimental-strip-types --env-file=.env src/evals/day5.ts"
   },
   "dependencies": {
     "@mastra/core": "latest",
