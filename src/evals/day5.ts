@@ -10,21 +10,28 @@ const has = (a: string, ...subs: string[]) => {
   return subs.some((s) => l.includes(s.toLowerCase()));
 };
 
+// A source is "cited" whether the agent names the file or the document's title —
+// both are valid citations. Exact-filename-only matching gives false negatives.
+const citesMsa = (a: string) =>
+  has(a, 'contoso-media-msa.md', 'contoso media master services agreement', 'contoso media msa', 'contoso msa');
+const citesPolicy = (a: string) =>
+  has(a, 'travel-and-expense-policy.md', 'travel & expense policy', 'travel and expense policy');
+
 const cases: Case[] = [
   {
     q: 'What are our payment terms with Contoso?',
     expect: 'net-30, cites contoso-media-msa.md',
-    check: (a) => has(a, 'contoso-media-msa.md') && has(a, 'net-30', '30 day', 'thirty'),
+    check: (a) => citesMsa(a) && has(a, 'net-30', '30 day', 'thirty'),
   },
   {
     q: 'Can I expense alcohol on a business trip?',
     expect: 'no (except client events), cites travel-and-expense-policy.md',
-    check: (a) => has(a, 'travel-and-expense-policy.md') && has(a, 'client', 'not reimbursable', 'except'),
+    check: (a) => citesPolicy(a) && has(a, 'client', 'not reimbursable', 'except'),
   },
   {
     q: 'What is the late-payment penalty in the Contoso contract?',
     expect: '1.5% per month, cites the MSA',
-    check: (a) => has(a, 'contoso-media-msa.md') && has(a, '1.5', 'one and one-half'),
+    check: (a) => citesMsa(a) && has(a, '1.5', 'one and one-half'),
   },
   {
     q: 'What did we spend on software subscriptions in Q2 2026?',

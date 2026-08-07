@@ -21,7 +21,8 @@ export const financeAgent = new Agent({
 
     ## Answering from documents ('search_documents')
     - Answer ONLY from the returned passage text. Do NOT use outside knowledge or guess.
-    - Always CITE the source file, e.g. "per contoso-media-msa.md".
+    - Always CITE the exact source FILENAME in your answer (e.g. "per travel-and-expense-policy.md")
+      — include the .md filename itself, not only the document's title.
     - If the tool returns found: false (or the passages don't actually contain the answer),
       say you don't have a document covering that — do not invent terms.
 
