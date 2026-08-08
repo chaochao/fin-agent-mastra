@@ -74,6 +74,38 @@ fixed it → 5/5.
 from (1) template fields, (2) current contents, (3) instructions — there is no "remember"
 keyword. To control what's remembered, edit the template fields.
 
+### What actually triggers a working-memory write (measured, 2026-08-08)
+There is **no trigger keyword**. The model decides per call whether something is "durable",
+influenced by (1) an explicit cue, (2) how durable the content really is, (3) an empty
+labeled template field. We ran one statement per fresh resourceId and read back
+`mastra_resources`:
+
+| Case | Statement | Stored? |
+|---|---|---|
+| A | "**Remember that** I am based in Seattle." | ✅ into `**User**` |
+| B | "I am based in Seattle." (same fact, no cue) | ❌ |
+| C | "I prefer short, one-line answers." | ❌ (despite a `**Preferences**` field existing) |
+| D | "What did we spend on software in Q2 2026?" | ❌ correct — transient |
+| E | "**Remember that** Q2 spend was $5,136." | ❌ correct — refused a one-off metric |
+| F | "I'm working on the board deck today." | ❌ correct — temporary |
+
+- **A vs B is a controlled pair** — same fact, only the word "Remember" differs, and only A
+  stored. The explicit cue is the strongest single signal.
+- **E shows the cue alone is not sufficient** — "remember" + a one-off number was correctly
+  refused, because the instructions say lasting facts only. Cue AND durability are needed.
+- **It is NOT deterministic.** In a separate run, "My birthday is January 1st. Also I prefer
+  figures rounded to whole dollars" stored BOTH with no cue at all — and even invented a new
+  `**User's birthday**` field not present in the template. That directly contradicts case C.
+  Same class of statement, opposite outcome, run to run.
+
+**Takeaways.** Off-template facts *can* be stored (Markdown is free-form), but improvised
+fields are discretionary and, under replace semantics, can be silently dropped on a later
+rewrite. So: if losing it would matter, give it a template field — the template is not a
+limit on what *can* be stored, it is a guarantee about what *will* be. And do not trust
+model judgment for anything that matters: tighten the instruction, prefer the Zod schema
+(merge semantics) for must-have fields, and assert on `mastra_resources` in a test.
+This is a Day 7 (guardrails) theme: "usually does the right thing" is not a guarantee.
+
 ### Decisions made
 - **Markdown template, not Zod schema.** Templates use *replace* semantics (agent rewrites
   the whole block, so a sloppy update can drop fields); schemas use *merge* semantics and
@@ -146,6 +178,12 @@ Retrieval routes each question to the right doc AND section: "payment terms for 
 
 Ranked-ish. Pull one into a day when it fits.
 
+- [ ] **Make working-memory writes reliable** (from the 2026-08-08 measurements above).
+  Today a stated preference/location is stored only sometimes. Options, cheapest first:
+  (a) tighten the instruction — "ALWAYS record any stated user preference, location, or
+  personal detail"; (b) add explicit template fields for what must persist; (c) switch
+  `workingMemory` from `template` to `schema` (Zod) for merge semantics + type safety.
+  Verify by re-running the A–F statement matrix and asserting on `mastra_resources`.
 - [ ] **Auto-generate the schema block from the DB** (`sqlite_master` / `PRAGMA`) instead
   of hand-writing it in the prompt. Prevents prompt/DB drift after any `ALTER TABLE`.
   Small, high-value.
