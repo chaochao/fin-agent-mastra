@@ -1,5 +1,5 @@
-// Day 3 live eval: prove the AGENT answers correctly (needs DEEPSEEK_API_KEY).
-// Run: npm run eval:day3
+// Live eval — guarded text-to-SQL (run_sql): prove the AGENT answers correctly (needs DEEPSEEK_API_KEY).
+// Run: npm run eval:sql
 //
 // For each question we compute a ground-truth value with our own SQL, ask the
 // agent in natural language, then check the agent's answer against the truth.

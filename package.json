@@ -8,14 +8,16 @@
     "start": "node --experimental-strip-types --env-file=.env run.mjs",
     "seed": "node --experimental-strip-types src/db/seed.ts",
     "test": "node --experimental-strip-types --test src/db/*.test.ts",
-    "eval:day3": "node --experimental-strip-types --env-file=.env src/evals/day3.ts",
     "ingest": "node --experimental-strip-types src/rag/ingest.ts",
     "search": "node --experimental-strip-types src/rag/search.ts",
-    "eval:day5": "node --experimental-strip-types --env-file=.env src/evals/day5.ts"
+    "eval:sql": "node --experimental-strip-types --env-file=.env src/evals/sql-queries.ts",
+    "eval:rag": "node --experimental-strip-types --env-file=.env src/evals/document-rag.ts",
+    "eval:memory": "node --experimental-strip-types --env-file=.env src/evals/memory.ts"
   },
   "dependencies": {
     "@mastra/core": "latest",
     "@mastra/libsql": "^1.16.0",
+    "@mastra/memory": "^1.26.0",
     "@mastra/rag": "latest",
     "better-sqlite3": "^13.0.1",
     "zod": "latest"

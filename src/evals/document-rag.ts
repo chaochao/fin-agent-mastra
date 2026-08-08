@@ -1,6 +1,6 @@
-// Day 5 live eval: does the agent route to the RAG tool, cite the source, ground its
+// Live eval — document RAG (search_documents): does the agent route to the RAG tool, cite the source, ground its
 // answers in retrieved text, and still handle SQL questions?
-// Run: npm run eval:day5   (needs DEEPSEEK_API_KEY in .env + Ollama running with bge-m3)
+// Run: npm run eval:rag   (needs DEEPSEEK_API_KEY in .env + Ollama running with bge-m3)
 import { mastra } from '../mastra/index.ts';
 
 type Case = { q: string; expect: string; check: (a: string) => boolean };

@@ -45,6 +45,45 @@ Safety comes from rails, not from restricting the query shape.
 
 ---
 
+## Day 6 — Memory (history + working memory)
+
+### What we built
+- `src/mastra/index.ts` — `LibSQLStore` on the **Mastra instance** (not on Memory) →
+  `data/memory.db`. Third store: finance.db (numbers), vectors.db (docs), memory.db (state).
+- `finance-agent.ts` — `new Memory({ options: { lastMessages: 20, workingMemory: {
+  enabled, scope:'resource', template } } })`, plus a "## Memory" prompt section telling it
+  to resolve follow-ups from history and update working memory for durable facts only.
+- Working-memory template seeded with facts that used to be hardcoded in the prompt
+  (currency, fiscal year, anchor date, gross-spend basis) — the agent can revise them.
+- `src/evals/memory.ts` (`npm run eval:memory`) — 5/5. Two threads, one resource: proves
+  follow-ups work *within* a thread, working memory *crosses* threads, history does not.
+
+### API drift caught (why the skill was worth installing)
+- Call signature is `agent.generate(p, { memory: { resource, thread } })` — **not**
+  top-level `{ resourceId, threadId }`, which is what internal knowledge suggested.
+- Storage attaches to the `Mastra` instance: `new Mastra({ storage: new LibSQLStore({ id, url }) })`.
+- `@mastra/memory@1.26.0` imports fine with core 1.51 (no pin needed, unlike libsql).
+
+### The template bug (worth remembering)
+First run scored 4/5: "history leaked" into a new thread. It hadn't — my template had a
+field `**Open topics / what we last discussed**:`, so the agent dutifully wrote conversation
+summaries into *resource-scoped* working memory, which then crossed threads by design.
+That field also contradicted the prompt rule "lasting facts only". Removing the one line
+fixed it → 5/5.
+**Lesson: the template's field labels ARE the instruction.** The model decides what to store
+from (1) template fields, (2) current contents, (3) instructions — there is no "remember"
+keyword. To control what's remembered, edit the template fields.
+
+### Decisions made
+- **Markdown template, not Zod schema.** Templates use *replace* semantics (agent rewrites
+  the whole block, so a sloppy update can drop fields); schemas use *merge* semantics and
+  are type-safe. Markdown is simpler and fine at our size — revisit if fields get dropped.
+- **Evals renamed** from `day3/day5/day6` to `sql-queries` / `document-rag` / `memory`
+  (`eval:sql`, `eval:rag`, `eval:memory`) — names should say what they test, not when written.
+- Also gitignore `data/*.db-shm` / `*.db-wal` (LibSQL runs in WAL mode).
+
+---
+
 ## Day 5 — `search_documents` RAG tool (wire RAG into the agent)
 
 ### What we built

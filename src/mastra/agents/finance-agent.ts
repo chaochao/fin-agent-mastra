@@ -1,6 +1,21 @@
 import { Agent } from '@mastra/core/agent';
+import { Memory } from '@mastra/memory';
 import { runSqlTool } from '../tools/run-sql.ts';
 import { searchDocumentsTool } from '../tools/search-documents.ts';
+
+// Working memory: a Markdown scratchpad the agent keeps updated about the user and
+// business. Resource-scoped, so it follows the user across ALL threads (unlike message
+// history, which is per-thread). Seeded with the facts that used to be hardcoded in the
+// prompt — the agent can revise them if the user says otherwise (e.g. fiscal year change).
+const WORKING_MEMORY_TEMPLATE = `# Business & user profile
+- **User**:
+- **Business**: B2B SaaS startup
+- **Base currency**: USD
+- **Fiscal year starts**: January 1
+- **Reporting anchor ("today")**: 2026-06-30
+- **Spend basis**: GROSS money-out (do not net out refunds unless asked)
+- **Preferences**:
+`;
 
 export const financeAgent = new Agent({
   id: 'finance-agent',
@@ -44,6 +59,16 @@ export const financeAgent = new Agent({
     transactions(id, account_id, date, amount, transaction_type, category, vendor,
                  description, invoice_id)
 
+    ## Memory
+    - Use the conversation history to resolve follow-ups. If the user says "and the quarter
+      before that?" or "what about Contoso?", resolve it against what was just discussed and
+      answer in full — do NOT ask them to repeat context you already have.
+    - Working memory holds durable facts (currency, fiscal year, anchor date, spend basis,
+      who the user is). Treat it as authoritative, and UPDATE it when the user tells you
+      something durable about themselves or the business (e.g. a fiscal-year change, a
+      preference, their name/role).
+    - Do not put one-off question results in working memory — it is for lasting facts only.
+
     ## Key conventions (read carefully — getting these wrong gives wrong answers)
     - Dates are ISO strings 'YYYY-MM-DD'. Data spans 2025-01-01 .. 2026-06-30. "Today" for
       relative periods is 2026-06-30, so: last quarter = Q2 2026 = 2026-04-01..2026-06-30;
@@ -66,4 +91,14 @@ export const financeAgent = new Agent({
   `,
   model: 'deepseek/deepseek-v4-pro',
   tools: { runSqlTool, searchDocumentsTool },
+  memory: new Memory({
+    options: {
+      lastMessages: 20, // conversation history: per-thread, enables follow-ups
+      workingMemory: {
+        enabled: true,
+        scope: 'resource', // persists across ALL threads for the same user
+        template: WORKING_MEMORY_TEMPLATE,
+      },
+    },
+  }),
 });
