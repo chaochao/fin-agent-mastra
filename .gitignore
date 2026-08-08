@@ -5,3 +5,6 @@ dist/
 .mastra/
 data/*.db
 *.log
+
+# local Claude settings (personal permissions)
+.claude/settings.local.json
